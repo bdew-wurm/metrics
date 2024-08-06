@@ -1,0 +1,28 @@
+apply plugin: 'java'
+
+group "net.bdew.wurm"
+version "0.3"
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://gotti.no-ip.org/maven/repository" }
+}
+
+dependencies {
+    implementation 'org.gotti.wurmunlimited:server-modlauncher:0.47'
+}
+
+jar {
+    archiveFileName = "${project.name}.jar"
+}
+
+task dist(type: Zip) {
+    into("mods", {
+        into(project.name, {
+            from jar
+        })
+        from fileTree(dir: 'mods', include: '*')
+    })
+    archiveFileName = "${project.name}-${project.version}.zip"
+}
