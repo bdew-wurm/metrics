@@ -5,24 +5,44 @@ import com.wurmonline.server.Players;
 import com.wurmonline.server.creatures.Creatures;
 
 public class MetricsCollector {
+    private final Runtime runtime = Runtime.getRuntime();
+    private Long lastData = Long.MIN_VALUE;
+
     @SuppressWarnings({"unused", "UnreachableCode"})
     public void onServerTickEnd(long nanos) {
         long now = System.currentTimeMillis();
+        MetricsData.tickFull.increment(nanos);
+        MetricsData.tickCount.increment();
 
-        MetricsData.tickCount.getAndIncrement();
-        MetricsData.tickTotal.addAndGet(nanos);
+        MetricsData.memoryAllocated.update(runtime.totalMemory());
+        MetricsData.memoryMax.update(runtime.maxMemory());
+        MetricsData.memoryUsed.update(runtime.totalMemory() - runtime.freeMemory());
 
-        if (!MetricsData.started || MetricsData.lastAggregateData + MetricsMod.collectionPeriod * 1000L < now) {
-            MetricsData.lastAggregateData = now;
-            MetricsData.creatures = Creatures.getInstance().getNumberOfCreatures();
-            MetricsData.players = Players.getInstance().getNumberOfPlayers();
-            MetricsData.items = Items.getNumberOfItems();
-            MetricsData.started = true;
+        if (lastData + MetricsMod.collectionPeriod * 1000L < now) {
+            lastData = now;
+            MetricsData.creatures.update(Creatures.getInstance().getNumberOfCreatures());
+            MetricsData.players.update(Players.getInstance().getNumberOfPlayers());
+            MetricsData.items.update(Items.getNumberOfItems());
         }
     }
 
     @SuppressWarnings({"unused"})
     public void onPollZonesEnd(long nanos) {
-        MetricsData.tickZones.addAndGet(nanos);
+        MetricsData.tickZones.increment(nanos);
+    }
+
+    @SuppressWarnings({"unused"})
+    public void onPollPlayersEnd(long nanos) {
+        MetricsData.tickPlayers.increment(nanos);
+    }
+
+    @SuppressWarnings({"unused"})
+    public void onSocketServerTickEnd(long nanos) {
+        MetricsData.tickSocket.increment(nanos);
+    }
+
+    @SuppressWarnings({"unused"})
+    public void onPollTilesEnd(long nanos) {
+        MetricsData.tickTiles.increment(nanos);
     }
 }

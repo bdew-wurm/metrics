@@ -3,6 +3,11 @@ apply plugin: 'java'
 group "net.bdew.wurm"
 version "0.3"
 
+tasks.withType(JavaCompile).configureEach {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -17,7 +22,7 @@ jar {
     archiveFileName = "${project.name}.jar"
 }
 
-task dist(type: Zip) {
+tasks.register('dist', Zip) {
     into("mods", {
         into(project.name, {
             from jar
