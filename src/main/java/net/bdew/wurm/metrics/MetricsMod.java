@@ -75,7 +75,7 @@ public class MetricsMod implements WurmServerMod, Initable, PreInitable, Configu
         try {
             MetricLabel.defaultLabel = new MetricLabel("server", Servers.localServer.name);
             if (listenPortOffset == 1)
-                MetricsServer.start(Integer.parseInt(Servers.localServer.INTRASERVERPORT) + listenPortOffset);
+                MetricsServer.start(Integer.parseInt(Servers.localServer.INTRASERVERPORT) + listenPort);
             else
                 MetricsServer.start(listenPort);
         } catch (IOException e) {
