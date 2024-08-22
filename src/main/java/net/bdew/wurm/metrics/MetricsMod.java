@@ -60,6 +60,29 @@ public class MetricsMod implements WurmServerMod, Initable, PreInitable, Configu
                 }
             });
 
+            CtClass ctSocket = cp.getCtClass("com.wurmonline.communication.SocketConnection");
+            HookManager.getInstance().addCallback(ctSocket, "_bdew_metrics_cb", hooks);
+
+            ctSocket.getMethod("flush", "()V").instrument(new ExprEditor() {
+                @Override
+                public void edit(MethodCall m) throws CannotCompileException {
+                    if (m.getMethodName().equals("limit")) {
+                        logger.info(String.format("Hooked %s.%s call in %s.%s line %d", m.getClassName(), m.getMethodName(), m.where().getDeclaringClass().getSimpleName(), m.where().getName(), m.getLineNumber()));
+                        m.replace("$_ = $proceed(); _bdew_metrics_cb.onSocketWrite(this.playerServerConnection, $_);");
+                    }
+                }
+            });
+
+            ctSocket.getMethod("tick", "()V").instrument(new ExprEditor() {
+                @Override
+                public void edit(MethodCall m) throws CannotCompileException {
+                    if (m.getMethodName().equals("reallyHandle")) {
+                        logger.info(String.format("Hooked %s.%s call in %s.%s line %d", m.getClassName(), m.getMethodName(), m.where().getDeclaringClass().getSimpleName(), m.where().getName(), m.getLineNumber()));
+                        m.replace("int tmp = $2.limit(); $proceed($$); _bdew_metrics_cb.onSocketRead(this.playerServerConnection, tmp);");
+                    }
+                }
+            });
+
         } catch (NotFoundException | CannotCompileException e) {
             throw new RuntimeException(e);
         }

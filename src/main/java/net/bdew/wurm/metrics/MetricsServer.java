@@ -33,7 +33,6 @@ public class MetricsServer {
         httpServer = HttpServer.create(address, 0);
 
         httpServer.createContext("/metrics", httpExchange -> {
-            logger.info(String.format("Request %s from %s", httpExchange.getRequestURI(), httpExchange.getRemoteAddress()));
             byte[] data = generateMetrics();
             httpExchange.sendResponseHeaders(200, data.length);
             try (OutputStream outStream = httpExchange.getResponseBody()) {
